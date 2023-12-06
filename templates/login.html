@@ -1,0 +1,13 @@
+{% block content %}
+  <style>
+    .errorlist {
+      color: red;
+    }
+  </style>
+  <h2>Log in</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Log in</button>
+  </form>
+{% endblock %}
