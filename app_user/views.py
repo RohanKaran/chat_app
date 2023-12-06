@@ -1,7 +1,9 @@
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from .forms import UserRegistrationForm, LoginForm
+
+from .forms import LoginForm, UserRegistrationForm
 from .models import User
 
 
@@ -9,7 +11,9 @@ def register(request):
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user = form.save(commit=False)
+            user.username = form.cleaned_data["email"]
+            user.save()
             return redirect("login")
     else:
         form = UserRegistrationForm()
@@ -33,3 +37,12 @@ def user_login(request):
     else:
         form = LoginForm()
     return render(request, "login.html", {"form": form})
+
+
+@login_required(login_url="/login")
+def toggle_online_status(request):
+    user = request.user
+    print(user.is_online)
+    user.is_online = not user.is_online
+    user.save()
+    return redirect("home")

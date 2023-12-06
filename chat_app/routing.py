@@ -8,11 +8,13 @@ from chat_app import consumer
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),
-        "websocket": AuthMiddlewareStack(URLRouter(
-            [
-                path("ws/chat/", consumer.FindConsumer.as_asgi()),
-                path("ws/chat/<room_name>/", consumer.ChatConsumer.as_asgi()),
-            ]
-        )),
+        "websocket": AuthMiddlewareStack(
+            URLRouter(
+                [
+                    path("ws/chat/", consumer.FindConsumer.as_asgi()),
+                    path("ws/chat/<room_name>/", consumer.ChatConsumer.as_asgi()),
+                ]
+            )
+        ),
     }
 )

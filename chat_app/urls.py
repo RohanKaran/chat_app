@@ -24,5 +24,10 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("register/", user_views.register, name="register"),
     path("login/", user_views.user_login, name="login"),
+    path(
+        "toggle_online_status/",
+        user_views.toggle_online_status,
+        name="toggle_online_status",
+    ),
     path("", views.chat_view, name="home"),
 ]

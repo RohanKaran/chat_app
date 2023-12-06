@@ -13,13 +13,29 @@
     color: blue;
   }
 </style>
+<button id="online-status-toggle" data-status="{{ request.user.is_online }}">
+    {{ request.user.is_online|yesno:"Online,Offline" }}
+</button>
+
+<button id="find-match">Find Match</button>
 <div id="chat-log" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
   <ul></ul>
 </div>
 <textarea id="chat-message-input" rows="3" cols="100"></textarea>
 <button id="chat-message-submit">Send</button>
-<button id="find-match">Find Match</button>
 <script>
+  document.getElementById('online-status-toggle').addEventListener('click', function() {
+    fetch("{% url 'toggle_online_status' %}")
+    .then(response => {
+        if(response.ok) {
+            // Toggle button text
+            let button = document.getElementById('online-status-toggle');
+            let status = button.getAttribute('data-status') === 'True';
+            button.setAttribute('data-status', !status);
+            button.textContent = status ? 'Offline' : 'Online';
+        }
+    });
+});
   let user_id = {{ user_id }};
   let chatSocket;
 

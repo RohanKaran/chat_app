@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
@@ -10,7 +10,7 @@ class User(AbstractUser):
         choices=[("male", "Male"), ("female", "Female"), ("other", "Other")],
     )
     country = models.CharField(max_length=50)
-    interests = models.ManyToManyField("Interest", null=True, db_index=True)
+    interests = models.ManyToManyField("Interest", db_index=True)
     is_online = models.BooleanField(default=False, db_index=True)
     current_connection = models.OneToOneField(
         "self",

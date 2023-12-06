@@ -1,8 +1,9 @@
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import HTML, Fieldset, Layout, Submit
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+
 from .models import User
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Fieldset, HTML
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -26,25 +27,25 @@ class UserRegistrationForm(UserCreationForm):
         super(UserRegistrationForm, self).__init__(*args, **kwargs)
         self.helper.layout = Layout(
             Fieldset(
-                'Personal Information',
-                'first_name',
-                'last_name',
-                'email',
-                'phone',
-                'gender',
-                'country',
+                "Personal Information",
+                "first_name",
+                "last_name",
+                "email",
+                "phone",
+                "gender",
+                "country",
             ),
             Fieldset(
-                'User Credentials',
-                'password1',
-                'password2',
+                "User Credentials",
+                "password1",
+                "password2",
             ),
             Fieldset(
-                'Interests',
-                'interests',
+                "Interests",
+                "interests",
             ),
         )
-        self.helper.add_input(Submit('submit', 'Register'))
+        self.helper.add_input(Submit("submit", "Register"))
 
 
 class LoginForm(forms.Form):
@@ -54,10 +55,12 @@ class LoginForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
-        self.helper.form_method = 'post'
+        self.helper.form_method = "post"
         self.helper.layout = Layout(
-            HTML('{% if form.errors %}<p class="errornote">Please correct the error below.</p>{% endif %}'),
-            'username',
-            'password'
+            HTML(
+                '{% if form.errors %}<p class="errornote">Please correct the error below.</p>{% endif %}'
+            ),
+            "username",
+            "password",
         )
-        self.helper.add_input(Submit('submit', 'Login'))
+        self.helper.add_input(Submit("submit", "Login"))
