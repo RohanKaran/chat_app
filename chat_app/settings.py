@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "app_user",
+    "crispy_forms",
+    "crispy_bootstrap4"
 ]
 
 
@@ -50,6 +52,8 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

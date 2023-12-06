@@ -28,6 +28,8 @@ def user_login(request):
                 return redirect("home")
             else:
                 form.add_error("username", "Invalid credentials.")
+        else:
+            form.add_error("username", "Invalid credentials.")
     else:
         form = LoginForm()
     return render(request, "login.html", {"form": form})
