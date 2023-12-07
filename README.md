@@ -35,5 +35,6 @@ are displayed in the chat log UI. Notifications about connection and disconnecti
 
 Register endpoint: `/register/`
 Login endpoint: `/login/`
+DB is pre-populated with users, you may delete them and create new ones.
 Admin username: `rohankaran` password: `123456`
 
