@@ -63,7 +63,7 @@
 </div>
 
 <script>
-  let user_id = {{ user_id }};
+  let user_id = {{ request.user.id }};
   let chatSocket;
 
   function displayChatSection(display) {
@@ -80,9 +80,16 @@
     chatSocket.onmessage = function (e) {
       const data = JSON.parse(e.data);
       if (data.message) {
+        if (data.message_type === 'notification') {
+          let newItem = document.createElement('li');
+          newItem.textContent = data.message;
+          newItem.classList.add('text-center');
+          document.querySelector('#chat-log ul').appendChild(newItem);
+          return;
+        }
         let newItem = document.createElement('li');
         newItem.textContent = data.message;
-        if (data.user === user_id) {
+        if (data.user.id === user_id) {
           newItem.classList.add('matched-user');
         } else {
           newItem.classList.add('other-user');

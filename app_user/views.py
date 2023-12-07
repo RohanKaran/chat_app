@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import redirect, render
@@ -46,4 +46,4 @@ def toggle_online_status(request):
     user = request.user
     user.is_online = not user.is_online
     user.save()
-    return render(request, "chat.html", {"user_id": user.id})
+    return render(request, "chat.html")

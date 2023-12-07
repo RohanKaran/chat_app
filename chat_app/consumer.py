@@ -20,9 +20,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_name,
             {
-                "type": "chat_message",
-                "message": f"User {self.user.id} has joined the chat",
-                "user": self.user.id,
+                "type": "notification",
+                "notification": f"{self.user.get_full_name()} has joined the chat",
+                "notification_type": "connection",
+                "user": self.user,
             },
         )
         await self.accept()
@@ -31,9 +32,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_name,
             {
-                "type": "chat_message",
-                "message": f"User {self.user.id} has left the chat",
-                "user": self.user.id,
+                "type": "notification",
+                "message": f"{self.user.get_full_name()} has left the chat",
+                "notification_type": "disconnection",
+                "user": self.user,
             },
         )
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
@@ -42,17 +44,41 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
+        if text_data_json.get("message"):
+            message = text_data_json["message"]
+            await self.channel_layer.group_send(
+                self.room_name,
+                {
+                    "type": "chat",
+                    "message": message,
+                    "message_type": "text_message",
+                    "user": self.user,
+                },
+            )
 
-        await self.channel_layer.group_send(
-            self.room_name,
-            {"type": "chat_message", "message": message, "user": self.user.id},
+    async def chat(self, event):
+        message = event["message"]
+        message_type = event.get("message_type")
+        user = event.get("user")
+        await self.send(
+            text_data=json.dumps(
+                {"message": message, "user": user, "message_type": message_type}
+            )
         )
 
-    async def chat_message(self, event):
-        message = event["message"]
-        user = event["user"]
-        await self.send(text_data=json.dumps({"message": message, "user": user}))
+    async def notification(self, event):
+        notification = event["notification"]
+        notification_type = event.get("notification_type")
+        user = event.get("user")
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "notification": notification,
+                    "user": user,
+                    "notification_type": notification_type,
+                }
+            )
+        )
 
     @sync_to_async
     def update_user_status(self, user, connected_user=None, **kwargs):
