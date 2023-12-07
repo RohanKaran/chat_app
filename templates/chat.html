@@ -14,38 +14,53 @@
   .other-user {
     color: blue;
   }
-</style>
-<button id="online-status-toggle" data-status="{{ request.user.is_online }}">
-  {{ request.user.is_online|yesno:"Online,Offline" }}
-</button>
 
-<button id="find-match">Find Match</button>
-<div id="chat-log" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
-  <ul></ul>
+  #chat-section {
+    display: none;
+  }
+</style>
+
+<div class="container">
+  <div class="row my-4">
+    <div class="col">
+      <button id="online-status-toggle" class="btn btn-primary" data-status="{{ request.user.is_online }}">
+        {{ request.user.is_online|yesno:"Online,Offline" }}
+      </button>
+      <button id="find-match" class="btn btn-success">Find Match</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <div id="chat-section">
+        <div id="chat-log" class="border p-3" style="height: 300px; overflow: auto;">
+          <ul class="list-unstyled"></ul>
+        </div>
+        <div class="input-group my-3">
+          <textarea id="chat-message-input" class="form-control" rows="3"></textarea>
+          <div class="input-group-append">
+            <button id="chat-message-submit" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<textarea id="chat-message-input" rows="3" cols="100"></textarea>
-<button id="chat-message-submit">Send</button>
+
 <script>
-  document.getElementById('online-status-toggle').addEventListener('click', function () {
-    fetch("{% url 'toggle_online_status' %}")
-      .then(response => {
-        if (response.ok) {
-          // Toggle button text
-          let button = document.getElementById('online-status-toggle');
-          let status = button.getAttribute('data-status') === 'True';
-          button.setAttribute('data-status', !status);
-          button.textContent = status ? 'Offline' : 'Online';
-        }
-      });
-  });
   let user_id = {{ user_id }};
   let chatSocket;
+
+  function displayChatSection(display) {
+    document.getElementById('chat-section').style.display = display ? 'block' : 'none';
+  }
 
   function connectToRoom(roomName) {
     if (chatSocket) {
       chatSocket.close();
     }
     chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+    displayChatSection(true);
 
     chatSocket.onmessage = function (e) {
       const data = JSON.parse(e.data);
@@ -77,8 +92,11 @@
     };
   }
 
+  // Rest of your JavaScript...
+
   document.addEventListener('DOMContentLoaded', () => {
     const mainSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+    displayChatSection(false);
 
     mainSocket.onmessage = function (e) {
       const data = JSON.parse(e.data);
