@@ -23,7 +23,7 @@ Message Handling: The script handles incoming messages and notifications. Messag
 are displayed in the chat log UI. Notifications about connection and disconnection events are also managed.
 
 ### How to Run
-```python -m venv venv```
+```python -m venv venv``` (Python 3.8+)
 
 `source venv/bin/activate` (Linux) `venv\Scripts\activate` (Windows)
 
