@@ -154,6 +154,11 @@
       if (chatSocket) {
         chatSocket.close();
       }
+      const onlineStatus = document.getElementById('online-status-toggle').getAttribute('data-status');
+      if (onlineStatus === 'False') {
+        alert('You are offline, please go online to find a match');
+        return;
+      }
       mainSocket.send(JSON.stringify({
         'action': 'find_match'
       }));

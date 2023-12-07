@@ -4,5 +4,4 @@ from django.shortcuts import render
 
 @login_required(login_url="/login")
 def chat_view(request):
-    user_id = request.user.id
-    return render(request, "chat.html", {"user_id": user_id})
+    return render(request, "chat.html")

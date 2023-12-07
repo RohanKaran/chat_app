@@ -3,7 +3,6 @@ import json
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core import serializers
-from django.forms import model_to_dict
 
 from app_user.models import User
 
