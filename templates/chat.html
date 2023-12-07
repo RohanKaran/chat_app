@@ -79,28 +79,40 @@
 
     chatSocket.onmessage = function (e) {
       const data = JSON.parse(e.data);
-      if (data.message) {
-        if (data.message_type === 'notification') {
-          let newItem = document.createElement('li');
-          newItem.textContent = data.message;
-          newItem.classList.add('text-center');
-          document.querySelector('#chat-log ul').appendChild(newItem);
-          return;
-        }
+      const handleUserMessage = (message, className) => {
         let newItem = document.createElement('li');
-        newItem.textContent = data.message;
-        if (data.user.id === user_id) {
-          newItem.classList.add('matched-user');
-        } else {
-          newItem.classList.add('other-user');
-        }
+        newItem.textContent = message;
+        newItem.classList.add(className);
         document.querySelector('#chat-log ul').appendChild(newItem);
+      };
+
+      if (data.message) {
+        handleUserMessage(
+          data.message,
+          data.user.id === user_id ? 'matched-user' : 'other-user'
+        );
+      } else if (data.notification) {
+        let message;
+        if (data.notification_type === "connection" && data.user.id !== user_id) {
+          message = "You are now connected to " + data.user.first_name;
+          handleUserMessage(message, 'other-user');
+          let other_user_details = document.createElement('div');
+          other_user_details.textContent =
+            "Name: " + data.user.first_name + " " + data.user.last_name + ", " +
+            "Gender: " + (data.user.gender || "N/A") + ", " +
+            "Country: " + (data.user.country || "N/A")
+
+          document.querySelector('#chat-log ul').appendChild(other_user_details);
+        } else if (data.notification_type === "disconnection" && data.user.id !== user_id) {
+          message = "You are now disconnected from " + data.user.first_name;
+          handleUserMessage(message, 'other-user');
+        }
       }
     };
 
+
     chatSocket.onclose = function (e) {
-      console.error('Chat socket closed unexpectedly');
-      document.querySelector('#chat-log ul').innerHTML = "";
+      console.log('Chat socket closed.');
     };
 
 
@@ -120,7 +132,6 @@
 
     mainSocket.onmessage = function (e) {
       const data = JSON.parse(e.data);
-      console.log(data)
       if (data.room_name) {
         console.log("Match found, joining room:", data.room_name);
         connectToRoom(data.room_name);
@@ -130,7 +141,7 @@
     };
 
     mainSocket.onclose = function (e) {
-      console.error('Chat socket closed unexpectedly');
+      console.log('Chat socket closed');
     };
 
     document.querySelector('#chat-message-input').focus();

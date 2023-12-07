@@ -2,6 +2,8 @@ import json
 
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.core import serializers
+from django.forms import model_to_dict
 
 from app_user.models import User
 
@@ -23,7 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "type": "notification",
                 "notification": f"{self.user.get_full_name()} has joined the chat",
                 "notification_type": "connection",
-                "user": self.user,
+                "user": await self.get_user_details(self.user),
             },
         )
         await self.accept()
@@ -33,9 +35,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_name,
             {
                 "type": "notification",
-                "message": f"{self.user.get_full_name()} has left the chat",
+                "notification": f"{self.user.get_full_name()} has left the chat",
                 "notification_type": "disconnection",
-                "user": self.user,
+                "user": await self.get_user_details(self.user),
             },
         )
         await self.channel_layer.group_discard(self.room_name, self.channel_name)
@@ -52,7 +54,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "chat",
                     "message": message,
                     "message_type": "text_message",
-                    "user": self.user,
+                    "user": await self.get_user_details(self.user),
                 },
             )
 
@@ -99,6 +101,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             else room_name.split("_")[1]
         )
         return User.objects.get(id=partner_id)
+
+    @sync_to_async
+    def get_user_details(self, user):
+        fields = (
+            "gender",
+            "country",
+            "first_name",
+            "last_name",
+        )
+        result = serializers.serialize("json", [user], fields=fields)[1:-1]
+        result = json.loads(result)
+        result["fields"]["id"] = result["pk"]
+        return result["fields"]
 
 
 class FindConsumer(AsyncWebsocketConsumer):
