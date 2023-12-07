@@ -2,6 +2,19 @@
 <html lang="en">
 <head>
   <title>Chat Room</title>
+  <style>
+    .matched-user {
+      color: green;
+    }
+
+    .other-user {
+      color: blue;
+    }
+
+    #chat-section {
+      display: none;
+    }
+  </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
         integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
 </head>
@@ -23,10 +36,12 @@
 <div class="container">
   <div class="row my-4">
     <div class="col">
-      <button id="online-status-toggle" class="btn btn-primary" data-status="{{ request.user.is_online }}">
+      <button id="online-status-toggle" class="{{ request.user.is_online|yesno:"btn btn-success,btn btn-secondary" }}"
+              data-status={{ request.user.is_online }}>
         {{ request.user.is_online|yesno:"Online,Offline" }}
       </button>
-      <button id="find-match" class="btn btn-success">Find Match</button>
+      <button id="find-match" class="btn btn-primary">Find Match</button>
+      <div>{% csrf_token %}</div>
     </div>
   </div>
 
@@ -92,8 +107,6 @@
     };
   }
 
-  // Rest of your JavaScript...
-
   document.addEventListener('DOMContentLoaded', () => {
     const mainSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
     displayChatSection(false);
@@ -127,6 +140,35 @@
         'action': 'find_match'
       }));
     };
+    const onlineStatusToggle = document.getElementById('online-status-toggle');
+
+    onlineStatusToggle.addEventListener('click', function () {
+      const userId = this.getAttribute('data-user-id');
+      const currentStatus = this.getAttribute('data-status');
+      fetch('/toggle_online_status/', {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+      })
+        .then(response => {
+          if (response.ok) {
+            if (currentStatus === 'True') {
+              this.setAttribute('data-status', 'False');
+              onlineStatusToggle.classList.remove('btn-success');
+              onlineStatusToggle.classList.add('btn-secondary');
+              onlineStatusToggle.textContent = 'Offline';
+
+            } else {
+              this.setAttribute('data-status', 'True');
+              onlineStatusToggle.classList.remove('btn-secondary');
+              onlineStatusToggle.classList.add('btn-success');
+              onlineStatusToggle.textContent = 'Online';
+            }
+          }
+        })
+        .catch(error => console.error(error));
+    });
   });
 
 </script>
