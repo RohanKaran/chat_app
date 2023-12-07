@@ -30,3 +30,10 @@ are displayed in the chat log UI. Notifications about connection and disconnecti
 `pip install -r requirements.txt`
 
 `python manage.py runserver`
+
+ *Default redis host and port: `localhost:6379`*
+
+Register endpoint: `/register/`
+Login endpoint: `/login/`
+Admin username: `rohankaran` password: `123456`
+
