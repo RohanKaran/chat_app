@@ -1,7 +1,9 @@
 import json
 
+import aioredis
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.conf import settings
 from django.core import serializers
 
 from app_user.models import User
@@ -116,16 +118,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 class FindConsumer(AsyncWebsocketConsumer):
-    connected_users = {}
-
     async def connect(self):
         self.user = self.scope["user"]
-        FindConsumer.connected_users[self.user.id] = self.channel_name
+        self.redis = await aioredis.from_url(f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}")
+        await self.redis.set(f"user:{self.user.id}", self.channel_name)
         await self.update_user_status(self.user, None)
         await self.accept()
 
     async def disconnect(self, close_code):
-        FindConsumer.connected_users.pop(self.user.id, None)
+        await self.redis.delete(f"user:{self.user.id}")
+        await self.redis.close()
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -136,17 +138,21 @@ class FindConsumer(AsyncWebsocketConsumer):
 
     async def initiate_matching_process(self):
         await self.update_user_status(self.user, None, is_online=True)
-        matched_user = await self.find_match(self.user)
+        connected_user_ids = await self.redis.keys("user:*")
+        connected_user_ids = [int(user_id.decode("utf-8").split(":")[1]) for user_id in connected_user_ids]
+        matched_user = await self.find_match(self.user, connected_user_ids)
         # print(matched_user)
         if matched_user:
             room_name = f"chat_{self.user.id}_{matched_user.id}"
+            print(room_name)
             await self.notify_user_of_room(self.user, room_name)
             await self.notify_user_of_room(matched_user, room_name)
         else:
             await self.send(text_data=json.dumps({"error": "No match found"}))
 
     async def notify_user_of_room(self, user, room_name):
-        channel_name = FindConsumer.connected_users.get(user.id)
+        channel_name = await self.redis.get(f"user:{user.id}")
+        channel_name = channel_name.decode("utf-8") if channel_name else None
         if channel_name:
             await self.channel_layer.send(
                 channel_name, {"type": "room_notification", "room_name": room_name}
@@ -163,7 +169,7 @@ class FindConsumer(AsyncWebsocketConsumer):
         )
 
     @sync_to_async
-    def find_match(self, user):
+    def find_match(self, user, connected_user_ids):
         if user.current_connection is not None:
             return None
 
@@ -173,12 +179,12 @@ class FindConsumer(AsyncWebsocketConsumer):
         ).exclude(id=user.id)
 
         for potential_match in potential_matches:
-            if potential_match.id in FindConsumer.connected_users:
+            if potential_match.id in connected_user_ids:
                 return potential_match
         any_online_user = (
             User.objects.exclude(id=user.id)
             .filter(
-                id__in=FindConsumer.connected_users.keys(),
+                id__in=connected_user_ids,
                 is_online=True,
                 current_connection=None,
             )
