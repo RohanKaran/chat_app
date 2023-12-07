@@ -21,3 +21,12 @@ established specifically for this room, allowing private communication between t
 
 Message Handling: The script handles incoming messages and notifications. Messages from the user and the chat partner
 are displayed in the chat log UI. Notifications about connection and disconnection events are also managed.
+
+### How to Run
+```python -m venv venv```
+
+`source venv/bin/activate` (Linux) `venv\Scripts\activate` (Windows)
+
+`pip install -r requirements.txt`
+
+`python manage.py runserver`
