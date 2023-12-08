@@ -13,7 +13,7 @@ Finding a Match: Users can initiate a search for a chat partner by clicking the 
 communicates with the server to find another online user and establishes a chat room. First it finds users with
 interests, if there is no person who matches with the user's interests, connects with anyone who is online and also connected to the server via WebSocket (used redis to store who is connected).
 One user can only be connected to one person at a time. Both the users have to be online for a connection to be
-established. They can voluntarily turn off their online status.
+established. They can voluntarily turn off their online status. Find connection logic and websocket code [/chat_app/consumer.py](https://github.com/RohanKaran/chat_app/blob/master/chat_app/consumer.py)
 
 Chat Room Connection: Upon finding a match, the user is connected to a chat room. A new WebSocket connection is
 established specifically for this room, allowing private communication between the matched users.
